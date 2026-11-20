@@ -1,0 +1,577 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#7545a3">
+<title>Mom's House of Chaos</title>
+<style>
+:root {
+  --purple:#7545a3;
+  --pink:#e95792;
+  --ink:#29243a;
+  --cream:#fff9f2;
+  --line:#e6dceb;
+  --green:#176c48;
+}
+* { box-sizing:border-box; }
+body {
+  margin:0;
+  font-family:system-ui,-apple-system,Arial,sans-serif;
+  background:linear-gradient(160deg,#f6e8ff,#fff5eb);
+  color:var(--ink);
+  line-height:1.5;
+}
+main {
+  max-width:650px;
+  margin:auto;
+  padding:18px 14px 50px;
+}
+header { text-align:center; padding:12px 0; }
+h1 { font-size:clamp(1.8rem,7vw,2.6rem); margin:4px 0; }
+h2 { font-size:1.45rem; line-height:1.25; }
+h3 { margin-bottom:8px; }
+p { margin:10px 0; }
+.subtitle { color:#654d77; font-weight:650; }
+.card {
+  background:white;
+  border:1px solid var(--line);
+  border-radius:20px;
+  padding:19px;
+  margin:14px 0;
+  box-shadow:0 5px 18px #53396a12;
+}
+.scene {
+  font-size:3.8rem;
+  text-align:center;
+  background:#f7efff;
+  border-radius:16px;
+  padding:20px 5px;
+  margin:12px 0;
+}
+button {
+  display:block;
+  width:100%;
+  min-height:54px;
+  margin:10px 0;
+  padding:13px 15px;
+  border:0;
+  border-radius:13px;
+  background:var(--purple);
+  color:white;
+  font:inherit;
+  font-weight:750;
+  cursor:pointer;
+  text-align:left;
+  touch-action:manipulation;
+}
+button:focus-visible {
+  outline:3px solid #f3a72c;
+  outline-offset:3px;
+}
+button:active { transform:scale(.99); }
+button.secondary {
+  background:#f1e7f8;
+  color:#3d2458;
+  border:1px solid #d9c5e8;
+}
+button.pink { background:var(--pink); }
+button:disabled { opacity:.55; cursor:default; }
+.scorebar {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  background:#37244e;
+  color:white;
+  border-radius:13px;
+  padding:13px;
+  font-weight:750;
+}
+.clue {
+  background:#fff6dd;
+  border-left:5px solid #efa92c;
+  padding:13px;
+  margin:12px 0;
+  border-radius:8px;
+}
+.quote {
+  font-style:italic;
+  color:#5e3c70;
+  background:#f8f0fc;
+  padding:13px;
+  border-radius:12px;
+}
+.suspect {
+  display:flex;
+  align-items:center;
+  gap:13px;
+}
+.avatar { font-size:2rem; }
+.small { font-size:.9rem; color:#665c70; }
+.success { color:var(--green); font-weight:800; }
+.warning { color:#9b3a48; font-weight:800; }
+.center { text-align:center; }
+.hidden { display:none; }
+footer {
+  text-align:center;
+  color:#695d71;
+  font-size:.8rem;
+  padding:20px;
+}
+@media(max-width:380px) {
+  .card { padding:14px; }
+  .scene { font-size:3rem; }
+}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div style="font-size:2.6rem">🏠🕵️‍♀️</div>
+  <h1>MOM'S HOUSE OF CHAOS</h1>
+  <div class="subtitle">
+    Five mysteries. Five suspicious children.
+    Zero hot cups of coffee.
+  </div>
+</header>
+
+<div class="scorebar" aria-live="polite">
+  <span id="progress">Ready to play</span>
+  <span id="score">0 / 50 points</span>
+</div>
+
+<div id="game" aria-live="polite"></div>
+
+<footer>
+  A fictional, family-friendly mystery game.
+  No accounts, tracking, or personal information.
+</footer>
+</main>
+
+<script>
+"use strict";
+
+const suspects = [
+  {
+    id:"max", name:"Max", emoji:"🧢",
+    description:"Red baseball cap, blue shirt. Loves soccer."
+  },
+  {
+    id:"bella", name:"Bella", emoji:"🎀",
+    description:"Pink dress, purple bow. Loves painting."
+  },
+  {
+    id:"oliver", name:"Oliver", emoji:"🦖",
+    description:"Green dinosaur hoodie. Loves experiments."
+  },
+  {
+    id:"zoe", name:"Zoe", emoji:"🛼",
+    description:"Yellow shirt, rainbow socks. Loves skating."
+  },
+  {
+    id:"finn", name:"Finn", emoji:"🎮",
+    description:"Orange sweatshirt, black glasses. Loves games."
+  }
+];
+
+const mysteries = [
+  {
+    title:"The Great Bathroom Catastrophe",
+    emoji:"🚽🧻🦆",
+    crime:"Someone stuffed an entire roll of toilet paper into the downstairs toilet. The bathroom is now an indoor lake, and a rubber duck is floating toward freedom.",
+    note:"All five children claim they were nowhere near the bathroom.",
+    culprit:"oliver",
+    mom:"I just wanted to use the bathroom without filing an insurance claim.",
+    defense:"I was testing how much paper a toilet could eat!",
+    reply:"Congratulations. You're now the assistant plumber.",
+    objects:[
+      {
+        name:"🧺 Laundry basket",
+        clue:"A wet green hoodie with a yellow dinosaur patch is hidden under the towels."
+      },
+      {
+        name:"🪥 Bathroom sink",
+        clue:"A green thread matching the dinosaur hoodie is caught on the faucet."
+      },
+      {
+        name:"🚽 The toilet",
+        clue:"A cardboard toilet-paper tube is wedged in the drain. Someone conducted a very expensive experiment."
+      },
+      {
+        name:"👣 Wet floor",
+        clue:"Wet footprints lead from the toilet to the basket hiding the dinosaur hoodie."
+      }
+    ]
+  },
+  {
+    title:"The Emergency Chocolate Heist",
+    emoji:"🍫🍬🕵️",
+    crime:"Mom's emergency chocolate stash has vanished. Only wrappers remain, along with a note saying, 'The chocolate evaporated.'",
+    note:"Apparently, science has advanced considerably.",
+    culprit:"finn",
+    mom:"My chocolate is not a shared household resource.",
+    defense:"I thought it was community chocolate!",
+    reply:"Then why was it hidden behind the canned beans?",
+    objects:[
+      {
+        name:"🍬 Chocolate wrapper",
+        clue:"An orange sweatshirt fiber is stuck to a chocolate-covered wrapper."
+      },
+      {
+        name:"🪑 Kitchen stool",
+        clue:"Chocolate smudges and another orange thread cover the stool used to reach the cabinet."
+      },
+      {
+        name:"🧽 Kitchen counter",
+        clue:"A black glasses-cleaning cloth covered in chocolate sits beside the crumbs."
+      },
+      {
+        name:"🗑️ Trash can",
+        clue:"A wrapper is stuffed inside an orange sweatshirt pocket hanging over the trash can."
+      }
+    ]
+  },
+  {
+    title:"The Great Wall Art Scandal",
+    emoji:"🎨🖍️🦕",
+    crime:"Someone drew a giant purple dinosaur on Mom's freshly painted living room wall. Underneath it, the artist wrote 'NOT ME.'",
+    note:"All five children have suddenly forgotten what crayons are.",
+    culprit:"bella",
+    mom:"I painted that wall LAST WEEKEND.",
+    defense:"I was making the house prettier!",
+    reply:"Wonderful. Next time, make the electric bill prettier.",
+    objects:[
+      {
+        name:"🖍️ The wall",
+        clue:"The purple dinosaur has a tiny pink bow drawn beside its signature."
+      },
+      {
+        name:"🛋️ Couch cushions",
+        clue:"A purple crayon and a pink ribbon matching Bella's bow are wedged between the cushions."
+      },
+      {
+        name:"🎨 Art table",
+        clue:"An identical dinosaur sketch is signed 'Bella's Masterpiece.'"
+      },
+      {
+        name:"🧸 Living room rug",
+        clue:"Purple crayon dust and a small piece of pink ribbon lie directly beneath the drawing."
+      }
+    ]
+  },
+  {
+    title:"The Laundry Slime Apocalypse",
+    emoji:"🫧🧺🟢",
+    crime:"Someone put neon-green slime into the washing machine. Mom's white towels now resemble radioactive seaweed.",
+    note:"The washing machine has requested early retirement.",
+    culprit:"max",
+    mom:"Whoever did this is folding towels until they're 35.",
+    defense:"I thought the washing machine would clean the slime!",
+    reply:"Wonderful. Next week, we'll put your homework in the dishwasher.",
+    objects:[
+      {
+        name:"🫧 Washing machine",
+        clue:"A slime-container lid with a soccer-ball sticker is trapped inside the drum."
+      },
+      {
+        name:"🧺 Laundry basket",
+        clue:"A blue T-shirt with neon-green slime on its sleeves is buried beneath the towels."
+      },
+      {
+        name:"🧴 Detergent shelf",
+        clue:"An empty container reads 'MAX'S MEGA SLIME — DO NOT TOUCH.'"
+      },
+      {
+        name:"👟 Laundry room floor",
+        clue:"Green slime footprints lead to a red baseball cap hidden behind the dryer."
+      }
+    ]
+  },
+  {
+    title:"The Couch Cushion Massacre",
+    emoji:"🛋️✂️☁️",
+    crime:"Someone cut open Mom's favorite couch cushion. White stuffing covers the living room like a miniature snowstorm.",
+    note:"A sign reads 'IT WAS THE DOG.' The family does not have a dog.",
+    culprit:"zoe",
+    mom:"I just wanted somewhere to sit with my cold coffee.",
+    defense:"I wanted to make fluffy clouds!",
+    reply:"Next time, use the clouds OUTSIDE.",
+    objects:[
+      {
+        name:"🛋️ Destroyed cushion",
+        clue:"The cushion seam was cut with scissors. A rainbow-colored sock fiber is caught in the opening."
+      },
+      {
+        name:"✂️ Craft scissors",
+        clue:"White stuffing covers the scissors. A matching rainbow sock fiber is stuck to the handle."
+      },
+      {
+        name:"🧦 Living room rug",
+        clue:"A rainbow sock lies beside a trail of stuffing leading to the craft table."
+      },
+      {
+        name:"🎨 Craft table",
+        clue:"A cloud made from couch stuffing sits beside a drawing labeled 'Zoe's Cloud Project.'"
+      }
+    ]
+  }
+];
+
+let order = [];
+let current = 0;
+let score = 0;
+let attempts = 0;
+let examined = [];
+let solved = [];
+let phase = "welcome";
+
+const game = document.getElementById("game");
+const progress = document.getElementById("progress");
+const scoreDisplay = document.getElementById("score");
+
+function shuffle(items) {
+  const copy = [...items];
+  for (let i=copy.length-1;i>0;i--) {
+    const j=Math.floor(Math.random()*(i+1));
+    [copy[i],copy[j]]=[copy[j],copy[i]];
+  }
+  return copy;
+}
+
+function button(label, action, secondary=false) {
+  const b=document.createElement("button");
+  b.type="button";
+  b.textContent=label;
+  if(secondary) b.className="secondary";
+  b.addEventListener("click",action);
+  return b;
+}
+
+function element(tag,text,className="") {
+  const e=document.createElement(tag);
+  e.textContent=text;
+  if(className) e.className=className;
+  return e;
+}
+
+function card() {
+  const c=document.createElement("section");
+  c.className="card";
+  return c;
+}
+
+function clear() {
+  game.replaceChildren();
+  scoreDisplay.textContent=score+" / 50 points";
+  progress.textContent=phase==="welcome"
+    ? "Ready to play"
+    : phase==="end"
+    ? "All five cases closed"
+    : "Mystery "+(current+1)+" of 5";
+}
+
+function renderWelcome() {
+  phase="welcome";
+  clear();
+  const c=card();
+  c.append(
+    element("h2","Welcome, Detective Mom!"),
+    element("div","☕🚨🏠","scene"),
+    element("p","Someone has committed crimes against your household. Naturally, nobody saw anything."),
+    element("p","Investigate objects, collect clues, and accuse one of five fictional children."),
+    element("p","Correct on your first try: 10 points. Second try: 5 points. Later attempts: 0 points. Maximum score: 50."),
+    element("p","Five quick mysteries. Your sanity? Already missing.","quote"),
+    button("🎮 Start Investigating",startGame)
+  );
+  game.append(c);
+}
+
+function startGame() {
+  order=shuffle(mysteries);
+  current=0;
+  score=0;
+  solved=[];
+  beginMystery();
+}
+
+function beginMystery() {
+  attempts=0;
+  examined=[];
+  phase="investigate";
+  renderMystery();
+}
+
+function renderMystery() {
+  phase="investigate";
+  clear();
+  const m=order[current];
+  const c=card();
+
+  c.append(
+    element("h2",m.title),
+    element("div",m.emoji,"scene"),
+    element("h3","🚨 THE CRIME"),
+    element("p",m.crime),
+    element("p",m.note,"small"),
+    element("p",'Mom: "'+m.mom+'"',"quote"),
+    element("h3","🔎 Investigate the Scene")
+  );
+
+  m.objects.forEach((obj,i)=>{
+    const found=examined.includes(i);
+    c.append(button(
+      obj.name+(found?" ✓":""),
+      ()=>investigate(i),
+      true
+    ));
+    if(found) c.append(element("div","🔎 "+obj.clue,"clue"));
+  });
+
+  if(examined.length) {
+    c.append(element("p",
+      examined.length+" of "+m.objects.length+" clues discovered.",
+      "small"
+    ));
+  }
+
+  c.append(button("🕵️‍♀️ I'm Ready to Accuse!",renderSuspects));
+  game.append(c);
+}
+
+function investigate(index) {
+  if(!examined.includes(index)) examined.push(index);
+  renderMystery();
+}
+
+function renderSuspects() {
+  phase="suspects";
+  clear();
+  const m=order[current];
+  const c=card();
+
+  c.append(
+    element("h2","🚨 Suspect Lineup"),
+    element("p","Five children. One disaster. Absolutely zero accountability."),
+    element("h3","Who committed the crime?")
+  );
+
+  suspects.forEach(s=>{
+    c.append(button(
+      s.emoji+" "+s.name+" — "+s.description,
+      ()=>accuse(s.id),
+      true
+    ));
+  });
+
+  c.append(button("🔎 Investigate More Evidence",renderMystery));
+  game.append(c);
+}
+
+function accuse(id) {
+  const m=order[current];
+  attempts++;
+
+  if(id===m.culprit) {
+    const points=attempts===1?10:attempts===2?5:0;
+    score+=points;
+    solved.push({
+      title:m.title,
+      culprit:suspects.find(s=>s.id===id).name,
+      points:points
+    });
+    renderSolved(points);
+  } else {
+    renderWrong(id);
+  }
+}
+
+function renderWrong(id) {
+  phase="wrong";
+  clear();
+  const s=suspects.find(x=>x.id===id);
+  const c=card();
+
+  c.append(
+    element("h2","🚨 NOT SO FAST!"),
+    element("div","🤨🔍","scene"),
+    element("p",s.name+" is innocent of this particular disaster!","warning"),
+    element("p","Mom: 'Fantastic. I've accused the wrong child, and the mess is still here.'","quote"),
+    element("p",
+      attempts===1
+      ? "Try again! A correct second accusation earns 5 points."
+      : "Keep investigating! You can still solve the mystery, but no more points are available for this case."
+    ),
+    button("🕵️‍♀️ Review Suspects",renderSuspects),
+    button("🔎 Investigate More",renderMystery,true)
+  );
+
+  game.append(c);
+}
+
+function renderSolved(points) {
+  phase="solved";
+  clear();
+  const m=order[current];
+  const s=suspects.find(x=>x.id===m.culprit);
+  const c=card();
+
+  c.append(
+    element("h2","🎉 CASE CLOSED!"),
+    element("div",s.emoji+"🏆","scene"),
+    element("h3",s.name.toUpperCase()+" IS GUILTY!"),
+    element("p","+"+points+" points!","success"),
+    element("p",s.name+': "'+m.defense+'"'),
+    element("p",'Mom: "'+m.reply+'"',"quote"),
+    element("h3","Total Score: "+score+" / 50")
+  );
+
+  if(current<4) {
+    c.append(button("➡️ Next Mystery",()=>{
+      current++;
+      beginMystery();
+    }));
+  } else {
+    c.append(button("🏆 See My Detective Title",renderEnd));
+  }
+  game.append(c);
+}
+
+function renderEnd() {
+  phase="end";
+  clear();
+  const c=card();
+
+  let title;
+  if(score===50) title="Supreme Commander of Household Chaos";
+  else if(score>=40) title="Legendary Mom Detective";
+  else if(score>=25) title="Chief Investigator of Suspicious Silence";
+  else title="Official Finder of Everyone's Missing Stuff";
+
+  c.append(
+    element("h2","🏆 ALL FIVE CASES CLOSED!"),
+    element("div","👑🕵️‍♀️🏠","scene"),
+    element("h2",score+" / 50 Points","center"),
+    element("h3",title,"center"),
+    element("p","You've solved five household crimes. Unfortunately, dinner still needs making.","quote"),
+    element("h3","Your Detective Report")
+  );
+
+  solved.forEach((r,i)=>{
+    c.append(element("p",
+      (i+1)+". "+r.title+" — "+r.culprit+" (+"+r.points+")"
+    ));
+  });
+
+  c.append(
+    element("p","Official reward: Five imaginary minutes of peace and permission to hide the chocolate in a locked safe."),
+    button("🔄 Play Again — Shuffle the Mysteries!",startGame),
+    button("🏠 Back to Welcome Screen",renderWelcome,true)
+  );
+  game.append(c);
+}
+
+renderWelcome();
+</script>
+</body>
+</html>
